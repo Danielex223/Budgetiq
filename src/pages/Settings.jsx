@@ -1,0 +1,222 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+export default function Settings() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [savingsGoal, setSavingsGoal] = useState("20");
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // LOAD USER DATA ON MOUNT
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setEmail(user.email || "");
+          setName(user.user_metadata?.name || "User");
+          setCurrency(user.user_metadata?.currency || "USD");
+          setSavingsGoal(user.user_metadata?.savings_goal || "20");
+        }
+      } catch (err) {
+        console.error("Load user error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // SAVE PROFILE CHANGES
+  const handleSave = async () => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          name,
+          currency,
+          savings_goal: savingsGoal,
+        },
+      });
+      if (error) throw error;
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Save error:", err);
+    }
+  };
+
+  // CLEAR ALL TRANSACTIONS
+  const handleClearTransactions = async () => {
+    if (!window.confirm("Delete all transactions? This cannot be undone.")) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      alert("All transactions deleted.");
+    } catch (err) {
+      console.error("Delete transactions error:", err);
+      alert("Error deleting transactions.");
+    }
+  };
+
+  // CLEAR ALL BUDGETS
+  const handleClearBudgets = async () => {
+    if (!window.confirm("Delete all budgets? This cannot be undone.")) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("budgets")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      alert("All budgets deleted.");
+    } catch (err) {
+      console.error("Delete budgets error:", err);
+      alert("Error deleting budgets.");
+    }
+  };
+
+  if (loading) return <div style={{ ...s.page, display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>;
+
+  return (
+    <div style={s.page}>
+      <div style={s.container}>
+
+        <div style={s.topbar}>
+          <div style={s.pageTitle}>Settings</div>
+        </div>
+
+        <div style={s.cols}>
+
+          {/* PROFILE */}
+          <div style={s.panel}>
+            <div style={s.panelHd}>Profile</div>
+
+            <div style={s.avatar}>
+              {name.charAt(0).toUpperCase()}
+            </div>
+
+            <div style={s.fieldLabel}>Display name</div>
+            <input
+              style={s.input}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            <div style={s.fieldLabel}>Email</div>
+            <input
+              style={s.input}
+              type="email"
+              value={email}
+              disabled
+            />
+
+            <div style={s.fieldLabel}>Currency</div>
+            <select style={s.input} value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              <option value="USD">USD — US Dollar</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="CAD">CAD — Canadian Dollar</option>
+              <option value="NGN">NGN — Nigerian Naira</option>
+            </select>
+
+            <button style={{ ...s.saveBtn, background: saved ? "#1D9E75" : "#7F77DD" }} onClick={handleSave}>
+              {saved ? "✓ Saved" : "Save changes"}
+            </button>
+          </div>
+
+          {/* PREFERENCES */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={s.panel}>
+              <div style={s.panelHd}>Finance preferences</div>
+
+              <div style={s.fieldLabel}>Savings rate target (%)</div>
+              <input
+                style={s.input}
+                type="number"
+                min="0"
+                max="100"
+                value={savingsGoal}
+                onChange={(e) => setSavingsGoal(e.target.value)}
+              />
+              <div style={{ fontSize: 12, color: "#64748b", marginTop: -6, marginBottom: 12 }}>
+                Dashboard will flag when you fall below this target.
+              </div>
+            </div>
+
+            {/* DANGER ZONE */}
+            <div style={{ ...s.panel, border: "0.5px solid rgba(226,75,74,0.3)" }}>
+              <div style={{ ...s.panelHd, color: "#E24B4A" }}>Danger zone</div>
+
+              <div style={s.dangerRow}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: "#f1f5f9" }}>Clear all transactions</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                    Permanently deletes all transaction data.
+                  </div>
+                </div>
+                <button
+                  style={s.dangerBtn}
+                  onClick={handleClearTransactions}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div style={{ ...s.dangerRow, marginTop: 10 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: "#f1f5f9" }}>Clear all budgets</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                    Removes all budget limits you've set.
+                  </div>
+                </div>
+                <button
+                  style={s.dangerBtn}
+                  onClick={handleClearBudgets}
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* ABOUT */}
+            <div style={s.panel}>
+              <div style={s.panelHd}>About</div>
+              <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.7 }}>
+                <div>BudgetIQ v1.0</div>
+                <div>Personal finance tracker</div>
+                <div style={{ marginTop: 8, color: "#475569" }}>Built with React + Vite + Supabase</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const s = {
+  page: { background: "#0b1120", minHeight: "100vh", color: "white", fontFamily: "sans-serif" },
+  container: { padding: "24px 20px", maxWidth: "960px", margin: "0 auto" },
+  topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" },
+  pageTitle: { fontSize: 18, fontWeight: 500, color: "#f1f5f9" },
+  cols: { display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 14 },
+  panel: { background: "#1e293b", borderRadius: 12, border: "0.5px solid #334155", padding: 16 },
+  panelHd: { fontSize: 11, fontWeight: 500, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 },
+  avatar: { width: 52, height: 52, borderRadius: "50%", background: "#7F77DD", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 500, color: "#fff", marginBottom: 16 },
+  fieldLabel: { fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: 500 },
+  input: { width: "100%", marginBottom: 10, padding: "8px 10px", borderRadius: 8, border: "0.5px solid #475569", background: "#0b1120", color: "white", fontSize: 13, outline: "none" },
+  saveBtn: { width: "100%", padding: 9, color: "#fff", fontSize: 13, fontWeight: 500, border: "none", borderRadius: 8, cursor: "pointer", transition: "background 0.2s" },
+  dangerRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  dangerBtn: { padding: "6px 14px", background: "rgba(226,75,74,0.12)", border: "0.5px solid rgba(226,75,74,0.4)", color: "#E24B4A", fontSize: 12, fontWeight: 500, borderRadius: 8, cursor: "pointer", flexShrink: 0 },
+};
