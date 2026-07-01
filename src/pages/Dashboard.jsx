@@ -6,12 +6,24 @@ import { fetchExchangeRates, convertCurrency, getCurrencySymbol } from "../lib/c
 import { getFrequencyLabel, getNextOccurrenceDate } from "../lib/recurringTransactions";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar } from "recharts";
 
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return mobile;
+}
+
+
 // CAT_COLORS and PIE_COLORS imported from theme.js
 const today = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
 const THIS_MONTH = new Date().toISOString().slice(0, 7);
 const MONTH_LABEL = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
 export default function Dashboard() {
+  const isMobile = useIsMobile();
   const { success, error: toastError } = useToast();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +174,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div style={s.cols}>
+        <div style={{ ...s.cols, gridTemplateColumns: isMobile ? "1fr" : s.cols.gridTemplateColumns }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={s.panel}>
               <div style={s.panelHd}>New transaction</div>
