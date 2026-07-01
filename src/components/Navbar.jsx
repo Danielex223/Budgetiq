@@ -45,11 +45,12 @@ export default function Navbar() {
   if (isMobile) {
     // Show 5 tabs: first 4 links + settings. Transactions gets its own spot.
     const tabLinks = [
-      { to: "/dashboard",    label: "Home",    icon: "⊞" },
-      { to: "/transactions", label: "Txns",    icon: "↕" },
-      { to: "/budgets",      label: "Budgets", icon: "◎" },
-      { to: "/goals",        label: "Goals",   icon: "◈" },
-      { to: "/analytics",    label: "More",    icon: "∿" },
+      { to: "/dashboard",    label: "Home",     icon: "⊞" },
+      { to: "/transactions", label: "Txns",     icon: "↕" },
+      { to: "/budgets",      label: "Budgets",  icon: "◎" },
+      { to: "/goals",        label: "Goals",    icon: "◈" },
+      { to: "/analytics",    label: "Analytics",icon: "∿" },
+      { to: "/settings",     label: "Settings", icon: "⚙" },
     ];
 
     return (
@@ -123,8 +124,8 @@ const s = {
 
 // Mobile bottom tab bar styles
 const m = {
-  bar:      { position: "fixed", bottom: 0, left: 0, right: 0, height: 64, background: T.bg.surface, borderTop: `1px solid ${T.bg.border}`, display: "flex", alignItems: "stretch", zIndex: 100, paddingBottom: "env(safe-area-inset-bottom)" },
-  tab:      { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, textDecoration: "none", color: T.text.secondary, fontSize: 10, fontWeight: 500, padding: "8px 0" },
+  bar:      { position: "fixed", bottom: 0, left: 0, right: 0, height: 64, background: T.bg.surface, borderTop: `1px solid ${T.bg.border}`, display: "flex", alignItems: "stretch", zIndex: 100, paddingBottom: "env(safe-area-inset-bottom)", overflowX: "auto", scrollbarWidth: "none" },
+  tab:      { flex: "0 0 72px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, textDecoration: "none", color: T.text.secondary, fontSize: 10, fontWeight: 500, padding: "8px 0" },
   tabActive:{ color: T.brand.primary },
   tabIcon:  { fontSize: 18, lineHeight: 1 },
   tabLabel: { fontSize: 10, fontWeight: 500 },
