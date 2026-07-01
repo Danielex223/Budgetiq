@@ -194,12 +194,18 @@ export default function Dashboard() {
               <div style={s.panel}>
                 <div style={s.panelHd}>Top expenses</div>
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={barData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={T.bg.border} />
-                    <XAxis dataKey="name" stroke={T.text.secondary} tick={{ fontSize: 10 }} />
-                    <YAxis stroke={T.text.secondary} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}` }} />
-                    <Bar dataKey="amount" fill={T.color.expense} />
+                  <BarChart data={barData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                    <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="name" stroke="transparent" tick={{ fontSize: 10, fill: T.text.secondary }} axisLine={false} tickLine={false} />
+                    <YAxis stroke="transparent" tick={{ fontSize: 10, fill: T.text.secondary }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`} />
+                    <Tooltip
+                      contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}`, borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: T.text.primary, fontWeight: 500 }}
+                      itemStyle={{ color: T.text.secondary }}
+                      formatter={v => [`$${v.toLocaleString()}`, "Amount"]}
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                    />
+                    <Bar dataKey="amount" fill={T.color.expense} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -215,7 +221,7 @@ export default function Dashboard() {
                         <Cell key={`cell-${i}`} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}` }} />
+                    <Tooltip contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}`, borderRadius: 8, fontSize: 12 }} labelStyle={{ color: T.text.primary }} itemStyle={{ color: T.text.secondary }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -223,16 +229,36 @@ export default function Dashboard() {
 
             {chartData.length > 0 && (
               <div style={s.panel}>
-                <div style={s.panelHd}>6-month trend</div>
+                <div style={{ ...s.panelHd, justifyContent: "space-between" }}>
+                  <span>6-month trend</span>
+                  <div style={{ display: "flex", gap: 12, fontSize: 11, color: T.text.secondary }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: T.color.income, display: "inline-block" }}></span>Income</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: T.color.expense, display: "inline-block" }}></span>Expenses</span>
+                  </div>
+                </div>
                 <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={T.bg.border} />
-                    <XAxis dataKey="name" stroke={T.text.secondary} tick={{ fontSize: 10 }} />
-                    <YAxis stroke={T.text.secondary} tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}` }} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Line type="monotone" dataKey="income" stroke={T.color.income} dot={false} strokeWidth={2} />
-                    <Line type="monotone" dataKey="expenses" stroke={T.color.expense} dot={false} strokeWidth={2} />
+                  <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                    <defs>
+                      <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={T.color.income} stopOpacity={0.25} />
+                        <stop offset="100%" stopColor={T.color.income} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={T.color.expense} stopOpacity={0.20} />
+                        <stop offset="100%" stopColor={T.color.expense} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="name" stroke="transparent" tick={{ fontSize: 10, fill: T.text.secondary }} axisLine={false} tickLine={false} />
+                    <YAxis stroke="transparent" tick={{ fontSize: 10, fill: T.text.secondary }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`} />
+                    <Tooltip
+                      contentStyle={{ background: T.bg.elevated, border: `1px solid ${T.bg.border}`, borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: T.text.primary, fontWeight: 500, marginBottom: 4 }}
+                      itemStyle={{ color: T.text.secondary }}
+                      formatter={v => [`$${v.toLocaleString()}`, undefined]}
+                    />
+                    <Line type="monotone" dataKey="income" stroke={T.color.income} strokeWidth={2.5} dot={{ r: 3, fill: T.color.income, strokeWidth: 2, stroke: T.bg.base }} activeDot={{ r: 5 }} fill="url(#incomeGrad)" />
+                    <Line type="monotone" dataKey="expenses" stroke={T.color.expense} strokeWidth={2.5} dot={{ r: 3, fill: T.color.expense, strokeWidth: 2, stroke: T.bg.base }} activeDot={{ r: 5 }} fill="url(#expenseGrad)" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
